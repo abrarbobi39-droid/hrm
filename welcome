@@ -1,0 +1,625 @@
+ <!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HRM System - Modern Employee Management</title>
+    
+    <!-- লারাভেল এসেট লোডার (অক্ষত) -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <!-- প্রিমিয়াম ৩D মোশন ও আইকন কিট -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --c-indigo: #6366F1;
+            --c-purple: #8B5CF6;
+            --c-cyan: #06B6D4;
+            --c-blue: #0EA5E9;
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #030611;
+            cursor: none; /* ডিফল্ট কার্সর হাইড */
+            overflow-x: hidden;
+        }
+
+        #preloader {
+            position: fixed;
+            inset: 0;
+            background: #030611;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 🌟 সম্পূর্ণ নতুন ও স্পষ্ট কাস্টম কার্সর নোডস 🌟 */
+        .c-dot {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #06B6D4;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.8), 0 0 30px rgba(6, 182, 212, 0.4);
+            transition: width 0.2s, height 0.2s, background-color 0.2s, transform 0.1s;
+        }
+        .c-ring {
+            position: fixed;
+            width: 46px;
+            height: 46px;
+            border: 2px solid rgba(6, 182, 212, 0.7); /* বর্ডার আরও স্পষ্ট ও কালারফুল করা হয়েছে */
+            background: rgba(6, 182, 212, 0.03);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            box-shadow: inset 0 0 10px rgba(6, 182, 212, 0.2);
+            transition: width 0.3s, height 0.3s, border-color 0.3s, background-color 0.3s;
+        }
+
+        /* ৩D ব্যাকগ্রাউন্ড ক্যানভাস */
+        #fluid-viewport {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* হাইপার গ্লাস মরফিজম */
+        .hyper-glass {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(255, 255, 255, 0.15);
+            position: relative;
+        }
+
+        .showcase-card {
+            transform-style: preserve-3d;
+            box-shadow: -20px 30px 80px rgba(0, 0, 0, 0.8);
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .glass-nav {
+            background: rgba(3, 6, 17, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            z-index: 100;
+        }
+
+        .studio-view { perspective: 2000px; }
+        .interactive-content { position: relative; z-index: 10; }
+
+        .shine-btn {
+            position: relative;
+            overflow: hidden;
+        }
+        .shine-btn::before {
+            content: ''; position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: skewX(-20deg);
+        }
+        .shine-btn:hover::before { left: 200%; transition: left 0.6s ease-in-out; }
+
+        .feature-card {
+            transform-style: preserve-3d;
+            perspective: 1000px;
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease, box-shadow 0.4s ease;
+        }
+        .feature-card:hover {
+            border-color: rgba(6, 182, 212, 0.5);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(6, 182, 212, 0.2);
+        }
+
+        .glow-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.5), rgba(14, 165, 233, 0.5), transparent);
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+        }
+
+        /* ফিক্সড এনিমেটেড টেক্সট গ্রেডিয়েন্ট */
+        .animated-text-grad {
+            background: linear-gradient(90deg, #06B6D4, #0EA5E9, #6366F1, #06B6D4);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: textFlow 4s linear infinite;
+            display: inline-block;
+        }
+        @keyframes textFlow {
+            0% { background-position: 0% center; }
+            100% { background-position: 200% center; }
+        }
+
+        .floating-node {
+            animation: floatMotion 4s ease-in-out infinite alternate;
+        }
+        @keyframes floatMotion {
+            0% { transform: translateY(0px) rotate(0deg); }
+            100% { transform: translateY(-10px) rotate(5deg); }
+        }
+    </style>
+</head>
+<body class="text-slate-300 antialiased leading-8 bg-[#030611]">
+
+    <!-- প্রি-লোডার স্ক্রিন -->
+    <div id="preloader">
+        <h2 class="text-2xl font-extrabold tracking-widest text-white mb-4 animate-pulse">HRM<span class="text-cyan-400">Pro</span></h2>
+        <div class="w-36 h-1 bg-white/10 rounded-full overflow-hidden">
+            <div id="loading-bar" class="w-0 h-full bg-cyan-500 transition-all duration-[1500ms] ease-out"></div>
+        </div>
+    </div>
+
+    <!-- মোশন ট্র্যাকড কার্সর নোডস -->
+    <div class="c-dot" id="custom-dot"></div>
+    <div class="c-ring" id="custom-ring"></div>
+
+    <!-- ৩D ব্যাকগ্রাউন্ড ইঞ্জিন ক্যানভাস -->
+    <div id="fluid-viewport">
+        <canvas id="fluid"></canvas>
+    </div>
+
+    <!-- Navigation Bar Matrix -->
+    <nav id="navbar" class="glass-nav fixed top-0 w-full h-[72px] flex items-center transition-all duration-300 interactive-content">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div class="flex justify-between items-center h-full">
+                
+                <div class="flex items-center group cursor-pointer">
+                    <div class="w-10 h-10 bg-gradient-to-tr from-cyan-500 via-blue-500 to-indigo-600 rounded-xl flex items-center justify-center font-bold text-white shadow-lg group-hover:rotate-12 transition-all duration-500">H</div>
+                    <span class="text-2xl font-extrabold tracking-tight ml-3 text-white">HRM<span class="text-cyan-400 font-semibold">Pro</span></span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/" class="text-sm font-semibold text-cyan-400 tracking-wide">Home</a>
+                    <a href="{{ route('features') }}" class="text-sm font-medium text-slate-400 hover:text-white transition-colors duration-300">Features</a>
+                    <a href="{{ route('about') }}" class="text-sm font-medium text-slate-400 hover:text-white transition-colors duration-300">About</a>
+                    <a href="{{ route('contact') }}" class="text-sm font-medium text-slate-400 hover:text-white transition-colors duration-300">Contact</a>
+                </div>
+
+                <!-- ব্লেড অথেনটিকেশন রাউটিং লজিক -->
+                <div class="flex items-center space-x-4">
+                    @if (Route::has('login'))
+                        @auth
+                            @if(Auth::user()->role === 'admin')
+                                <a href="{{ route('admin.dashboard') }}" class="shine-btn bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-all duration-300 shadow-md">Dashboard</a>
+                            @else
+                                <a href="{{ route('employee.dashboard') }}" class="shine-btn bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-all duration-300 shadow-md">Dashboard</a>
+                            @endif
+                        @else
+                            <a href="{{ route('login') }}" class="shine-btn bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-all duration-300 shadow-md">Log in</a>
+                        @endauth
+                    @endif
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+    <!-- 1. Hero Section -->
+    <section class="relative min-h-screen flex items-center justify-center pt-28 pb-16 overflow-hidden interactive-content">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            
+            <!-- বামের কন্টেন্ট এরিয়া -->
+            <div class="lg:col-span-6 text-left hero-text-block z-20">
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-6 leading-[1.15]">
+                    Manage Your <br>Workforce <br><span class="animated-text-grad">Smarter & Faster</span>
+                </h1>
+                <p class="text-slate-400 text-base mb-8 max-w-lg leading-relaxed">
+                    An all-in-one HR Management System to streamline attendance, leaves, payroll, and tasks for your growing team. Move your cursor around to warp the vector grid space.
+                </p>
+                <div class="flex space-x-4">
+                    <a href="{{ route('login') }}" class="shine-btn inline-block bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 text-white font-extrabold px-8 py-4 rounded-xl shadow-xl hover:shadow-[0_0_30px_rgba(6,182,212,0.3)] transform hover:-translate-y-1 transition-all duration-300">Get Started</a>
+                    <a href="#" class="border border-white/20 text-white font-semibold px-8 py-4 rounded-xl hover:bg-white/10 hover:border-white/40 transition-all duration-300">Learn More</a>
+                </div>
+            </div>
+
+            <!-- ডানের ৩D ড্যাশবোর্ড মকআপ -->
+            <div class="lg:col-span-6 studio-view relative flex justify-center items-center mt-16 lg:mt-0 dashboard-wrapper z-20 pl-4">
+                
+                <div class="absolute -top-12 -left-6 hyper-glass p-3 rounded-xl z-30 flex items-center space-x-3 float-element" data-depth="0.35">
+                    <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-400 text-xs"><i class="fa-solid fa-clock"></i></div>
+                    <div><h4 class="text-[10px] font-bold text-white uppercase tracking-wider">Attendance</h4><p class="text-[9px] text-teal-400">98.4% Live</p></div>
+                </div>
+
+                <div class="absolute -bottom-8 -right-4 hyper-glass p-3 rounded-xl z-30 flex items-center space-x-3 float-element" data-depth="0.25">
+                    <div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400 text-xs"><i class="fa-solid fa-brain"></i></div>
+                    <div><h4 class="text-[10px] font-bold text-white uppercase tracking-wider">HR AI</h4><p class="text-[9px] text-cyan-400">Optimized</p></div>
+                </div>
+
+                <!-- মেইন মকআপ কন্টেইনার -->
+                <div class="w-full max-w-[500px] aspect-[4/3] hyper-glass rounded-2xl p-6 showcase-card border border-white/10" data-tilt>
+                    <div class="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
+                        <div class="flex space-x-2">
+                            <div class="w-3 h-3 rounded-full bg-rose-500/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-amber-500/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-emerald-500/80"></div>
+                        </div>
+                        <div class="text-[9px] font-mono tracking-widest text-slate-500 uppercase flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+                            Secure Node Stream
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-12 gap-4">
+                        <div class="col-span-8 space-y-4">
+                            <div class="grid grid-cols-3 gap-3">
+                                <div class="bg-white/5 border border-white/5 rounded-xl p-3 text-center">
+                                    <span class="text-[8px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Active Team</span>
+                                    <span class="text-lg font-extrabold text-white tracking-tight"><span class="counter" data-target="94">0</span>%</span>
+                                </div>
+                                <div class="bg-white/5 border border-white/5 rounded-xl p-3 text-center">
+                                    <span class="text-[8px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Leaves</span>
+                                    <span class="text-lg font-extrabold text-cyan-400 tracking-tight counter" data-target="4">0</span>
+                                </div>
+                                <div class="bg-white/5 border border-white/5 rounded-xl p-3 text-center">
+                                    <span class="text-[8px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Payroll</span>
+                                    <span class="text-lg font-extrabold text-emerald-400 tracking-tight">$<span class="counter" data-target="92">0</span>k</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white/5 border border-white/5 rounded-xl p-4">
+                                <div class="flex justify-between items-center mb-3">
+                                    <span class="text-[10px] font-bold uppercase text-white tracking-widest">Performance Wave</span>
+                                    <span class="text-[9px] text-cyan-400 font-mono">╱╲╱╲╱╲</span>
+                                </div>
+                                <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden">
+                                    <div class="bg-gradient-to-r from-cyan-500 via-blue-500 to-teal-400 h-full w-[85%] rounded-full"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-span-4 bg-white/5 border border-white/5 rounded-xl p-3 flex flex-col justify-between">
+                            <div>
+                                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Logs</span>
+                                <div class="space-y-2 text-[9px] text-slate-300">
+                                    <div class="flex items-center space-x-1.5"><span class="w-1.5 h-1.5 rounded-full bg-teal-400"></span><span class="truncate">Sync Ok</span></div>
+                                    <div class="flex items-center space-x-1.5"><span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span><span class="truncate">Slips Update</span></div>
+                                </div>
+                            </div>
+                            <div class="flex -space-x-1.5 overflow-hidden mt-2 pt-2 border-t border-white/5 justify-start">
+                                <div class="h-6 w-6 rounded-full ring-2 ring-slate-950 bg-cyan-500 flex items-center justify-center text-[8px] font-bold text-white">JD</div>
+                                <div class="h-6 w-6 rounded-full ring-2 ring-slate-950 bg-blue-500 flex items-center justify-center text-[8px] font-bold text-white">AS</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <div class="glow-divider"></div>
+
+    <!-- 2. Features Section -->
+    <section class="py-32 relative z-10 interactive-content section-trigger" id="features">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="mb-20 text-center">
+                <span class="text-xs font-bold text-cyan-400 uppercase tracking-widest">Powerful Features</span>
+                <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight mt-2">Core System Engine</h2>
+                <p class="text-slate-500 mt-4">Everything you need to manage your business operations smoothly.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <!-- Feature 1 -->
+                <div class="p-8 rounded-2xl hyper-glass feature-card group cursor-pointer border border-white/5" data-spotlight>
+                    <div class="w-12 h-12 bg-cyan-500/10 text-cyan-400 flex items-center justify-center rounded-xl mb-6 font-bold text-xl border border-white/10 shadow-sm floating-node">👥</div>
+                    <h3 class="text-xl font-bold mb-3 text-white transition-colors duration-300 group-hover:text-cyan-400">Employee Management</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Keep complete, secure records of all employees, departments, and designations.</p>
+                </div>
+                
+                <!-- Feature 2 -->
+                <div class="p-8 rounded-2xl hyper-glass feature-card group cursor-pointer border border-white/5" data-spotlight>
+                    <div class="w-12 h-12 bg-blue-500/10 text-blue-400 flex items-center justify-center rounded-xl mb-6 font-bold text-xl border border-white/10 shadow-sm floating-node" style="animation-delay: 0.5s;">⏱️</div>
+                    <h3 class="text-xl font-bold mb-3 text-white transition-colors duration-300 group-hover:text-blue-400">Attendance Tracking</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Daily check-in/out, monthly history, and instant report generation for transparency.</p>
+                </div>
+                
+                <!-- Feature 3 -->
+                <div class="p-8 rounded-2xl hyper-glass feature-card group cursor-pointer border border-white/5" data-spotlight>
+                    <div class="w-12 h-12 bg-indigo-500/10 text-indigo-400 flex items-center justify-center rounded-xl mb-6 font-bold text-xl border border-white/10 shadow-sm floating-node" style="animation-delay: 1s;">💳</div>
+                    <h3 class="text-xl font-bold mb-3 text-white transition-colors duration-300 group-hover:text-indigo-400">Automated Payroll</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">Calculate salaries, generate payslips, manage bonuses and deductions effortlessly.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <div class="glow-divider"></div>
+
+    <!-- 3. Statistics Section -->
+    <section class="py-24 relative z-10 interactive-content">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                <div class="hyper-glass p-6 rounded-2xl border border-white/5">
+                    <div class="text-4xl font-extrabold mb-2 text-white tracking-tight"><span class="counter" data-target="99">0</span>%</div>
+                    <div class="text-cyan-400 text-xs font-bold uppercase tracking-wider">Accuracy Rate</div>
+                </div>
+                <div class="hyper-glass p-6 rounded-2xl border border-white/5">
+                    <div class="text-4xl font-extrabold mb-2 text-white tracking-tight"><span class="counter" data-target="10">0</span>k+</div>
+                    <div class="text-blue-400 text-xs font-bold uppercase tracking-wider">Active Employees</div>
+                </div>
+                <div class="hyper-glass p-6 rounded-2xl border border-white/5">
+                    <div class="text-4xl font-extrabold mb-2 text-white tracking-tight">24/7</div>
+                    <div class="text-indigo-400 text-xs font-bold uppercase tracking-wider">Cloud Access</div>
+                </div>
+                <div class="hyper-glass p-6 rounded-2xl border border-white/5">
+                    <div class="text-4xl font-extrabold mb-2 text-white tracking-tight"><span class="counter" data-target="50">0</span>%</div>
+                    <div class="text-teal-400 text-xs font-bold uppercase tracking-wider">Time Saved</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="glow-divider"></div>
+
+    <!-- 4. Testimonials Section -->
+    <section class="py-32 relative z-10 interactive-content">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <span class="text-xs font-bold text-cyan-400 uppercase tracking-widest">Feedback Stream</span>
+                <h2 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight mt-2">What People Say</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="hyper-glass p-8 rounded-2xl border border-white/5">
+                    <p class="text-slate-400 italic text-sm leading-relaxed">"This system transformed our HR process. Payroll processing now takes minutes instead of days!"</p>
+                    <div class="mt-6 font-bold text-white text-xs uppercase tracking-wider">— Sarah Jenkins, HR Director</div>
+                </div>
+                <div class="hyper-glass p-8 rounded-2xl border border-white/5">
+                    <p class="text-slate-400 italic text-sm leading-relaxed">"The attendance tracking and leave management features are super easy to use for our remote team."</p>
+                    <div class="mt-6 font-bold text-white text-xs uppercase tracking-wider">— David Miller, CEO</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="glow-divider"></div>
+
+    <!-- Footer -->
+    <footer class="hyper-glass border-t border-white/10 text-slate-400 py-16 relative z-10 interactive-content rounded-t-3xl mx-2 sm:mx-6 mb-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-12 gap-12 pb-12 border-b border-white/5">
+            <div class="md:col-span-6 space-y-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-tr from-cyan-500 to-blue-500 rounded-lg flex items-center justify-center font-bold text-white text-sm shadow-[0_0_15px_rgba(6,182,212,0.4)]">H</div>
+                    <span class="text-lg font-extrabold text-white tracking-wider">HRM<span class="text-cyan-400">Pro</span></span>
+                </div>
+                <p class="text-slate-400 text-xs leading-relaxed max-w-sm">
+                    Next generation high performance cloud workforce automation software layouts designed inside secure architecture matrix systems. Experience real-time continuous dynamic tracking.
+                </p>
+            </div>
+            
+            <div class="md:col-span-3 space-y-3">
+                <h4 class="text-xs font-bold uppercase text-white tracking-wider text-cyan-400">Navigation</h4>
+                <ul class="space-y-2 text-xs text-slate-400">
+                    <li class="hover:text-white transition-colors cursor-pointer"><i class="fa-solid fa-angle-right text-[9px] mr-1 text-cyan-500"></i> Features Module</li>
+                    <li class="hover:text-white transition-colors cursor-pointer"><i class="fa-solid fa-angle-right text-[9px] mr-1 text-cyan-500"></i> About Matrix</li>
+                </ul>
+            </div>
+            
+            <div class="md:col-span-3 space-y-3">
+                <h4 class="text-xs font-bold uppercase text-white tracking-wider text-blue-400">Nodes Status</h4>
+                <div class="p-3 bg-white/5 border border-white/5 rounded-xl flex items-center justify-between">
+                    <span class="text-[10px] font-mono text-slate-400">All Systems Operational</span>
+                    <span class="flex h-2 w-2 rounded-full bg-emerald-400 animate-ping"></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-500 font-bold tracking-widest uppercase">
+            <div>&copy; 2026 HRMPro. All rights reserved.</div>
+            <div class="flex space-x-6 text-base mt-4 md:mt-0">
+                <i class="fa-brands fa-twitter hover:text-cyan-400 hover:scale-110 transition-all cursor-pointer"></i>
+                <i class="fa-brands fa-github hover:text-white hover:scale-110 transition-all cursor-pointer"></i>
+                <i class="fa-brands fa-linkedin hover:text-blue-400 hover:scale-110 transition-all cursor-pointer"></i>
+            </div>
+        </div>
+    </footer>
+
+    <!-- স্ক্রিপ্ট অ্যানিমেশন লাইব্রেরি সমূহ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+    
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        // প্রিলোডার প্রসেস ট্র্যাকার
+        window.addEventListener('DOMContentLoaded', () => {
+            const bar = document.getElementById('loading-bar');
+            bar.style.width = '100%';
+            setTimeout(() => {
+                gsap.to("#preloader", { opacity: 0, duration: 0.5, onComplete: () => document.getElementById("preloader").remove() });
+                triggerHeroAnimations();
+            }, 1500);
+        });
+
+        // 🌟 কাস্টম কার্সর ট্র্যাকিং মেকানিজম (আপডেটেড ও হাইপার-ভিজিবল) 🌟
+        const dot = document.getElementById('custom-dot');
+        const ring = document.getElementById('custom-ring');
+        let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
+
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            // ডটটিকে একদম ইনস্ট্যান্টলি মাউসের পজিশনে রাখা হচ্ছে
+            dot.style.left = mouseX + 'px';
+            dot.style.top = mouseY + 'px';
+        });
+
+        function animateCursorRing() {
+            // রিং ট্র্যাকিং আরও নিখুঁত ও স্মুথ করা হলো
+            ringX += (mouseX - ringX) * 0.15;
+            ringY += (mouseY - ringY) * 0.15;
+            ring.style.left = ringX + 'px';
+            ring.style.top = ringY + 'px';
+            requestAnimationFrame(animateCursorRing);
+        }
+        animateCursorRing();
+
+        // লিংক বা বাটনে হোভার করলে কার্সরের গ্লোয়িং এক্সপ্যান্ড ইফেক্ট
+        document.querySelectorAll('a, button, [data-spotlight], .cursor-pointer').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                dot.style.transform = 'translate(-50%, -50%) scale(2)';
+                dot.style.backgroundColor = '#fff';
+                ring.style.width = '64px'; 
+                ring.style.height = '64px';
+                ring.style.borderColor = 'rgba(6, 182, 212, 1)';
+                ring.style.backgroundColor = 'rgba(6, 182, 212, 0.1)';
+            });
+            el.addEventListener('mouseleave', () => {
+                dot.style.transform = 'translate(-50%, -50%) scale(1)';
+                dot.style.backgroundColor = '#06B6D4';
+                ring.style.width = '46px'; 
+                ring.style.height = '46px';
+                ring.style.borderColor = 'rgba(6, 182, 212, 0.7)';
+                ring.style.backgroundColor = 'rgba(6, 182, 212, 0.03)';
+            });
+        });
+
+        // ৩D কন্টিনিউয়াস ভেক্টর ফ্লুইড রিবনস
+        const canvas = document.getElementById('fluid');
+        const ctx = canvas.getContext('2d');
+        
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        let targetMouseX = width / 2;
+        let targetMouseY = height / 2;
+        let currentMouseX = width / 2;
+        let currentMouseY = height / 2;
+
+        window.addEventListener('mousemove', (e) => {
+            targetMouseX = e.clientX;
+            targetMouseY = e.clientY;
+        });
+
+        function drawVectorFluidMesh(t) {
+            ctx.clearRect(0, 0, width, height);
+
+            currentMouseX += (targetMouseX - currentMouseX) * 0.05;
+            currentMouseY += (targetMouseY - currentMouseY) * 0.05;
+
+            let orbGradient1 = ctx.createRadialGradient(currentMouseX, currentMouseY, 10, width * 0.15, height * 0.8, 180);
+            orbGradient1.addColorStop(0, 'rgba(6, 182, 212, 0.15)');
+            orbGradient1.addColorStop(0.5, 'rgba(14, 165, 233, 0.05)');
+            orbGradient1.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = orbGradient1;
+            ctx.beginPath(); ctx.arc(width * 0.15, height * 0.8, 250, 0, Math.PI * 2); ctx.fill();
+
+            let totalRibbons = 12;
+            for (let r = 0; r < totalRibbons; r++) {
+                ctx.beginPath();
+                let offsetCoeff = r / totalRibbons;
+                let strokeWidth = 55 * (1 - offsetCoeff * 0.6);
+                ctx.lineWidth = strokeWidth;
+                
+                let alpha = (0.28 * (1 - offsetCoeff)) + 0.03;
+                ctx.strokeStyle = `rgba(6, 182, 212, ${alpha})`;
+
+                for (let x = -50; x < width + 50; x += 15) {
+                    let dx = x - currentMouseX;
+                    let distortInertia = Math.exp(-Math.abs(dx) / 450);
+                    let baseSine = Math.sin(x * 0.0022 + t * 0.0008 + offsetCoeff * 1.4);
+                    let harmonicSine = Math.sin(x * 0.005 + t * 0.0015) * 0.25;
+                    let y = height * 0.52 + (baseSine + harmonicSine) * (height * 0.22) + (currentMouseY - height * 0.5) * distortInertia * 0.75;
+
+                    if (x === -50) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+            requestAnimationFrame(drawVectorFluidMesh);
+        }
+        requestAnimationFrame((time) => drawVectorFluidMesh(time));
+
+        // ন্যাভবার ইন্টারঅ্যাকশন
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if(window.scrollY > 40) {
+                nav.style.background = 'rgba(3, 6, 17, 0.85)';
+                nav.style.borderColor = 'rgba(6, 182, 212, 0.2)';
+            } else {
+                nav.style.background = 'rgba(3, 6, 17, 0.7)';
+                nav.style.borderColor = 'rgba(255,255,255,0.04)';
+            }
+        });
+
+        // স্পটলাইট ও ৩D টিল্ট ইফেক্ট কার্ড কন্ট্রোল
+        document.querySelectorAll('[data-spotlight]').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                card.style.background = `radial-gradient(600px circle at ${x}px ${y}px, rgba(6, 182, 212, 0.15), transparent 45%)`;
+                
+                const cardWidth = rect.width;
+                const cardHeight = rect.height;
+                const rotateX = ((y - (cardHeight / 2)) / (cardHeight / 2)) * -8;
+                const rotateY = ((x - (cardWidth / 2)) / (cardWidth / 2)) * 8;
+                
+                card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.01)`;
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.background = 'rgba(255, 255, 255, 0.02)';
+                card.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
+            });
+        });
+
+        // প্যারালাক্স ফ্লোটিং এলিমেন্টস
+        window.addEventListener('mousemove', (e) => {
+            const amountX = (e.clientX - window.innerWidth/2) * 0.03;
+            const amountY = (e.clientY - window.innerHeight/2) * 0.03;
+            document.querySelectorAll('.float-element').forEach(el => {
+                const depth = el.getAttribute('data-depth');
+                gsap.to(el, { x: amountX * depth, y: amountY * depth, duration: 0.4 });
+            });
+        });
+
+        // হিরো সেকশন এন্ট্রি ও কাউন্টার সিকোয়েন্সার
+        function triggerHeroAnimations() {
+            gsap.from(".hero-text-block", { opacity: 0, y: 30, duration: 0.8, ease: "power3.out" });
+            gsap.from(".dashboard-wrapper", { opacity: 0, scale: 0.97, duration: 1, ease: "power2.out" }, "-=0.5");
+            
+            document.querySelectorAll('.counter').forEach(c => {
+                const target = +c.getAttribute('data-target');
+                gsap.to(c, { innerText: target, duration: 1.8, snap: { innerText: 1 }, ease: "power2.out" });
+            });
+        }
+
+        gsap.from(".feature-card", {
+            scrollTrigger: { trigger: ".section-trigger", start: "top 75%" },
+            opacity: 0, y: 40, duration: 0.6, stagger: 0.15, ease: "power2.out"
+        });
+
+        VanillaTilt.init(document.querySelectorAll(".showcase-card"), { max: 6, speed: 300 });
+    </script>
+</body>
+</html>
